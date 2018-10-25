@@ -190,28 +190,6 @@ namespace GitMessageParser
         /// <returns></returns>
         public List<GitLog> ReadLogsDirect(DateTime dateSince, string author)
         {
-            /*if (string.IsNullOrEmpty(author))
-                throw new ArgumentNullException("author");
-
-            string args = "log --since=\""
-                + dateSince.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture)
-                + "\" --author=\""
-                + author
-                + "\" --date=iso-local --pretty=format:\"%H★%an★%at★%s\"";
-
-            Process proc = new Process();
-            proc.StartInfo.FileName = @"git.exe";
-            proc.StartInfo.WorkingDirectory = _gitPath;
-            proc.StartInfo.Arguments = args;
-            proc.StartInfo.UseShellExecute = false;
-            proc.StartInfo.RedirectStandardOutput = true;
-            proc.StartInfo.StandardOutputEncoding = Encoding.UTF8;
-            proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
-            proc.Start();
-            string commitMessages = proc.StandardOutput.ReadToEnd();
-            proc.WaitForExit();
-
-            return ParseGitMessage(commitMessages);*/
             return ReadLogsDirect(dateSince.ToString("yyyy/MM/dd", CultureInfo.InvariantCulture), author);
         }
 
@@ -231,7 +209,7 @@ namespace GitMessageParser
                 + dateArgument
                 + "\" --author=\""
                 + author
-                + "\" --date=iso-local --pretty=format:\"%H★%an★%at★%s\"";
+                + "\" --date=iso-local --pretty=format:\"%H★%an★%at★%B⛔\"";
 
             Process proc = new Process();
             proc.StartInfo.FileName = @"git.exe";
@@ -259,7 +237,7 @@ namespace GitMessageParser
 
             if (!string.IsNullOrEmpty(commitMessages))
             {
-                string[] lines = commitMessages.Split('\n');
+                string[] lines = commitMessages.Split('⛔');
                 for (int i=0; i<lines.Length; i++)
                 {
                     if (string.IsNullOrEmpty(lines[i]))
@@ -318,12 +296,18 @@ namespace GitMessageParser
                 header = header.Replace(exclueded[0], "");
                 header = header.Replace(exclueded[1], "");
                 header = header.Replace(exclueded[2], "");
+                header = header.Replace("\n", "");
                 body = commitMessages.Substring(index3 + token3.Length, index4 - index3 - token3.Length);
+                List<string> bodyLines = body.Split('\n').ToList();
+                for (int i = 0; i < bodyLines.Count; i++)
+                    bodyLines[i] = bodyLines[i].Replace("\n", "");                
+                bodyLines.RemoveAll(s => string.IsNullOrWhiteSpace(s));
+                bodyLines.RemoveAll(s => s.Contains("如題。"));
 
                 CommitReport cr = new CommitReport();
                 cr.Version = ver;
                 cr.Header = header;
-                cr.Body = body;
+                cr.Body = bodyLines;
                 return cr;
             }
             return null;

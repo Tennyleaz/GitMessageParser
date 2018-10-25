@@ -20,6 +20,6 @@ namespace GitMessageParser
     {
         public string Version;
         public string Header;
-        public string Body;
+        public List<string> Body;
     }
 }
