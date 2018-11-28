@@ -13,7 +13,7 @@ namespace GitMessageParser
         public string Author;
         public string AuthorEmail;
         public string CommitMessage;
-        public int timeStamp;
+        public int TimeStamp;
     }
 
     public class CommitReport
@@ -21,5 +21,6 @@ namespace GitMessageParser
         public string Version;
         public string Header;
         public List<string> Body;
+        public int TimeStamp;
     }
 }

@@ -172,7 +172,7 @@ namespace GitMessageParser
                         int timeStamp;
                         if (int.TryParse(lines[4], out timeStamp))
                         {
-                            gitObj.timeStamp = timeStamp;
+                            gitObj.TimeStamp = timeStamp;
                         }
                         objectList.Add(gitObj);
                     }
@@ -252,7 +252,7 @@ namespace GitMessageParser
                         int timeStamp;
                         if (int.TryParse(arguments[2], out timeStamp))
                         {
-                            gitObj.timeStamp = timeStamp;
+                            gitObj.TimeStamp = timeStamp;
                         }
                         logs.Add(gitObj);
                     }
@@ -267,8 +267,9 @@ namespace GitMessageParser
         /// </summary>
         /// <param name="commitMessages"></param>
         /// <returns></returns>
-        public static CommitReport ParseReport(string commitMessages)
+        public static CommitReport ParseReport(GitLog log)
         {
+            string commitMessages = log.CommitMessage;
             // Version 1.0.0.0
             //- ADD：增加設定檔
             //處理要項：
@@ -297,6 +298,8 @@ namespace GitMessageParser
                 header = header.Replace(exclueded[1], "");
                 header = header.Replace(exclueded[2], "");
                 header = header.Replace("\n", "");
+                ver = ver.Replace("\n", "");
+                ver = ver.Replace(" ", "");
                 body = commitMessages.Substring(index3 + token3.Length, index4 - index3 - token3.Length);
                 List<string> bodyLines = body.Split('\n').ToList();
                 for (int i = 0; i < bodyLines.Count; i++)
@@ -308,6 +311,7 @@ namespace GitMessageParser
                 cr.Version = ver;
                 cr.Header = header;
                 cr.Body = bodyLines;
+                cr.TimeStamp = log.TimeStamp;          
                 return cr;
             }
             return null;
