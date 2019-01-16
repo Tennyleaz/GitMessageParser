@@ -227,6 +227,41 @@ namespace GitMessageParser
         }
 
         /// <summary>
+        /// 直接用 git log 指令讀取 commit log，需要開始和結束時間
+        /// </summary>
+        /// <param name="dateSinceArgument"></param>
+        /// <param name="dateUntilArgument"></param>
+        /// <param name="author"></param>
+        /// <returns></returns>
+        public List<GitLog> ReadLogsDirect(string dateSinceArgument, string dateUntilArgument, string author)
+        {
+            if (string.IsNullOrEmpty(author))
+                throw new ArgumentNullException("author");
+
+            string args = "log --since=\""
+                + dateSinceArgument
+                + "\" --until=\""
+                + dateUntilArgument
+                + "\" --author=\""
+                + author
+                + "\" --date=iso-local --pretty=format:\"%H★%an★%at★%B⛔\"";
+
+            Process proc = new Process();
+            proc.StartInfo.FileName = @"git.exe";
+            proc.StartInfo.WorkingDirectory = _gitPath;
+            proc.StartInfo.Arguments = args;
+            proc.StartInfo.UseShellExecute = false;
+            proc.StartInfo.RedirectStandardOutput = true;
+            proc.StartInfo.StandardOutputEncoding = Encoding.UTF8;
+            proc.StartInfo.WindowStyle = ProcessWindowStyle.Hidden;
+            proc.Start();
+            string commitMessages = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit();
+
+            return ParseGitMessage(commitMessages);
+        }
+
+        /// <summary>
         /// 將純文字 git commit message 變成 class
         /// </summary>
         /// <param name="commitMessages"></param>
