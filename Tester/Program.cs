@@ -11,7 +11,7 @@ namespace Tester
     {
         static void Main(string[] args)
         {
-            string testPath = @"C:\Workspace\WorldCardTeam\.git";
+            string testPath = @"C:\Workspace\PDFView\PDF View 2\.git";
             GitMessageParser.GitMessageParser parser = new GitMessageParser.GitMessageParser(testPath);
 
             if (!GitMessageParser.GitMessageParser.IsGitInstalled())
@@ -35,6 +35,10 @@ namespace Tester
                     {
                         Console.WriteLine(messageLines);
                         List<GitLog> objectList2 = parser.ReadLogsDirect(DateTime.Today.AddDays(-1), "tenny");
+                        foreach (var log in objectList2)
+                        {
+                            var cr = GitMessageParser.GitMessageParser.ParseReport(log);
+                        }
                     }                    
                 }
             }

@@ -300,7 +300,6 @@ namespace GitMessageParser
         /// <summary>
         /// 讀取 commit 訊息變成日報適合的格式
         /// </summary>
-        /// <param name="commitMessages"></param>
         /// <returns></returns>
         public static CommitReport ParseReport(GitLog log)
         {
@@ -318,6 +317,7 @@ namespace GitMessageParser
             string token2 = "-";
             string token3 = "處理要項:";
             string token4 = "開發者";
+            string token5 = "1. ";
             string ver, header, body;
             string[] exclueded = { "ADD：", "CHG：", "DEL：" };
 
@@ -325,17 +325,33 @@ namespace GitMessageParser
             int index2 = commitMessages.IndexOf(token2, StringComparison.CurrentCultureIgnoreCase);
             int index3 = CultureInfo.CurrentCulture.CompareInfo.IndexOf(commitMessages, token3, CompareOptions.IgnoreWidth);
             int index4 = commitMessages.IndexOf(token4, StringComparison.CurrentCultureIgnoreCase);
-            if (index1 >= 0 && index2 > index1 && index3 > index2 && index4 > index3)
+            int index5 = commitMessages.IndexOf(token5, StringComparison.CurrentCultureIgnoreCase);
+            if (index1 >= 0 && index2 > index1)
             {
-                ver = commitMessages.Substring(index1 + token1.Length, index2 - index1 - token1.Length);
-                header = commitMessages.Substring(index2 + token2.Length, index3 - index2 - token2.Length);
+                if (index3 > index2)
+                    header = commitMessages.Substring(index2 + token2.Length, index3 - index2 - token2.Length);
+                else
+                    header = commitMessages.Substring(index2 + token2.Length, index5 - index2 - token2.Length);
                 header = header.Replace(exclueded[0], "");
                 header = header.Replace(exclueded[1], "");
                 header = header.Replace(exclueded[2], "");
                 header = header.Replace("\n", "");
+
+                ver = commitMessages.Substring(index1 + token1.Length, index2 - index1 - token1.Length);
                 ver = ver.Replace("\n", "");
                 ver = ver.Replace(" ", "");
-                body = commitMessages.Substring(index3 + token3.Length, index4 - index3 - token3.Length);
+
+                if (index4 > index3)
+                    body = commitMessages.Substring(index3 + token3.Length, index4 - index3 - token3.Length);
+                else
+                {
+                    var list = commitMessages.Split('\n').ToList();
+                    if (list.Count >= 3)
+                        body = SkipNLines(2, commitMessages);
+                    else
+                        body = SkipNLines(1, commitMessages);
+                }
+
                 List<string> bodyLines = body.Split('\n').ToList();
                 for (int i = 0; i < bodyLines.Count; i++)
                     bodyLines[i] = bodyLines[i].Replace("\n", "");                
@@ -350,6 +366,17 @@ namespace GitMessageParser
                 return cr;
             }
             return null;
+        }
+
+        private static string SkipNLines(int n, string str)
+        {
+            string[] lines = str
+                .Split(Environment.NewLine.ToCharArray())
+                .Skip(n)
+                .ToArray();
+
+            string output = string.Join(Environment.NewLine, lines);
+            return output;
         }
     }
 }
